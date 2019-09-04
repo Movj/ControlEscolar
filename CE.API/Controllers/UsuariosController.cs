@@ -104,7 +104,7 @@ namespace CE.API.Controllers
 
         [HttpPatch]
         [Route("{id}", Name = "PartialUpdateUserAsync")]
-        public async Task<IActionResult> PartualUpdateUserAsync(Guid id,
+        public async Task<IActionResult> PartialUpdateUserAsync(Guid id,
             [FromBody] JsonPatchDocument<ModelsDto.UsuarioForUpdateDto> PatchDoc)
         {
             if (PatchDoc == null) return BadRequest();
