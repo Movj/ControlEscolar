@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace CE.API.Filters
 {
-    public class UserMinInfoResultFilterAttribute : ResultFilterAttribute
+    public class UsersMinInfoResultFilterAttribute : ResultFilterAttribute
     {
         private IMapper _map;
 
-        public UserMinInfoResultFilterAttribute(IMapper mapper)
+        public UsersMinInfoResultFilterAttribute(IMapper mapper)
         {
             _map = mapper;
         }
@@ -38,10 +38,9 @@ namespace CE.API.Filters
             }
 
             // Mapping result from GetUserAsync IActionResult method
-            resultFromAction.Value = _map.Map<ModelsDto.UsuarioDto>(resultFromAction.Value);
+            resultFromAction.Value = _map.Map<IEnumerable<ModelsDto.UsuarioDto>>(resultFromAction.Value);
 
             await next();
         }
-
     }
 }

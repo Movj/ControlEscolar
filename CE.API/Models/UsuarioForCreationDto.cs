@@ -8,22 +8,23 @@ namespace CE.API.ModelsDto
 {
     public class UsuarioForCreationDto
     {
-        [Required]
+        //[Required]
         public string Email { get; set; }
-        [Required]
+        //[Required]
         public string Password { get; set; }
-        [Required]
+        //[Required]
         public string ApellidoPaterno { get; set; }
-        [Required]
+       // [Required]
         public string ApellidoMaterno { get; set; }
-        [Required]
+       // [Required]
         public string Nombre { get; set; }
-        [Required]
+        //[Required]
         public string TelefonoCelular { get; set; }
         public string TelefonoCasa { get; set; }
-        [Required]
+        //[Required]
         public string Direccion { get; set; }
         public string CodigoPostal { get; set; }
+        //[Required]
         public DateTimeOffset AnioNacimiento { get; set; }
     }
 }

@@ -46,7 +46,8 @@ namespace CE.API
             services.AddScoped<IUserRolesRepository, UserRoleRepository>();
 
             // Registering Filters
-            services.AddScoped<Filters.UsuarioMinInfoResultFilterAttribute>();
+            services.AddScoped<Filters.UserMinInfoResultFilterAttribute>();
+            services.AddScoped<Filters.UsersMinInfoResultFilterAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

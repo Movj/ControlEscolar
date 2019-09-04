@@ -14,9 +14,7 @@ namespace CE.API.Services
         Task<bool> UserExists(Guid userId);
         // For Post
         void AddUser(Entities.Usuario usuario);
-        // For Patch
-        void PartualUpdateUser(Entities.Usuario usuario);
-        // For Put
+        // For Put and patch
         void UpdateUser(Entities.Usuario usuario);
         // For Delete
         void DeleteUser(Entities.Usuario usuario);

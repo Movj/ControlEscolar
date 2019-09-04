@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,9 @@ namespace CE.API
     {
         public static void Main(string[] args)
         {
+            // Throttle the thread pool (set availabe threads to amount of processors)
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+
             CreateWebHostBuilder(args).Build().Run();
         }
 

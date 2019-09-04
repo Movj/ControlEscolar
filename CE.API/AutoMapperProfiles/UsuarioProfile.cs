@@ -15,6 +15,8 @@ namespace CE.API.AutoMapperProfiles
                 opt.MapFrom(src => $"{src.ApellidoPaterno} {src.ApellidoMaterno} {src.Nombre}"));
 
             CreateMap<Entities.Usuario, ModelsDto.UsuarioFullInfoDto>();
+            CreateMap<ModelsDto.UsuarioForCreationDto, Entities.Usuario>();
+
         }
     }
 }

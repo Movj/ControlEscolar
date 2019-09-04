@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using CE.API.Entities;
 using CE.API.ModelsDto;
+using Microsoft.EntityFrameworkCore;
 
 namespace CE.API.Services
 {
-    public class UserRoleRepository : IUserRolesRepository
+    public class UserRoleRepository : IUserRolesRepository, IDisposable
     {
         private CEDatabaseContext _context;
         public UserRoleRepository(CEDatabaseContext context)
@@ -17,12 +18,24 @@ namespace CE.API.Services
 
         public void AddUser(Usuario usuario)
         {
-            throw new NotImplementedException();
+            if (usuario != null)
+            {
+                if (usuario.Id == Guid.Empty)
+                {
+                    usuario.Id = Guid.NewGuid();
+                }
+                _context.Usuario.Add(usuario);
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(usuario));
+            }
+            
         }
 
         public void DeleteUser(Usuario usuario)
         {
-            throw new NotImplementedException();
+            _context.Usuario.Remove(usuario);
         }
 
         public async Task<Usuario> GetUserAsync(Guid userId)
@@ -30,9 +43,9 @@ namespace CE.API.Services
             return await _context.Usuario.FindAsync(userId);
         }
 
-        public Task<IEnumerable<Usuario>> GetUsersAsync()
+        public async Task<IEnumerable<Usuario>> GetUsersAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Usuario.ToListAsync();
         }
 
         public Task<IEnumerable<Usuario>> GetUsersFullInfoAsync()
@@ -40,26 +53,46 @@ namespace CE.API.Services
             throw new NotImplementedException();
         }
 
-        public void PartualUpdateUser(Usuario usuario)
-        {
-            throw new NotImplementedException();
-        }
 
-        public Task<bool> SaveChangesAsync()
+        public async Task<bool> SaveChangesAsync()
         {
-            throw new NotImplementedException();
+            return (await _context.SaveChangesAsync() > 0);
         }
 
         public void UpdateUser(Usuario usuario)
         {
-            throw new NotImplementedException();
+            // no code in this implementation
+            _context.Usuario.Attach(usuario);
         }
 
         public async Task<bool> UserExists(Guid userId)
         {
-            var userEntity = await _context.Usuario.FindAsync(userId);
+            var userEntity = await _context.Usuario.FirstOrDefaultAsync(w => w.Id == userId);
             if (userEntity == null) return false;
             return true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_context != null)
+                {
+                    _context.Dispose();
+                    _context = null;
+                }
+                //if (_cancellationTokenSource != null)
+                //{
+                //    _cancellationTokenSource.Dispose();
+                //    _cancellationTokenSource = null;
+                //}
+            }
         }
     }
 }
