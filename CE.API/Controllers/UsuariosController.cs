@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CE.API.Services;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -76,13 +77,9 @@ namespace CE.API.Controllers
         public async Task<IActionResult> UpdateUserAsync(Guid userId,
             [FromBody] ModelsDto.UsuarioForUpdateDto userForUpdate)
         {
-            if (!await _userRolesRepository.UserExists(userId))
-            {
-                return NotFound();
-            }
+            if (userForUpdate == null) return BadRequest();
 
-            // Model state validation
-            if (!ModelState.IsValid) return new UnprocessableEntityObjectResult(ModelState);
+            if (!await _userRolesRepository.UserExists(userId)) return NotFound();
 
             // Getting user from db
             var userEntity = await _userRolesRepository.GetUserAsync(userId);
@@ -90,19 +87,60 @@ namespace CE.API.Controllers
             // Mapping
             _mapper.Map(userForUpdate, userEntity);
 
+            // Checking model state after update
             if (!ModelState.IsValid) return new UnprocessableEntityObjectResult(ModelState);
 
-            // Applying update
+            // Applying update, making context aware of changes
             _userRolesRepository.UpdateUser(userEntity);
 
             if (!await _userRolesRepository.SaveChangesAsync())
             {
-                throw new Exception($"Error al momento de guardar los cambios - Actualizando {userId}");
+                //throw new Exception($"Error al momento de guardar los cambios - Actualizando {userId}");
+                return BadRequest();
             }
 
             return NoContent();
         }
 
+        [HttpPatch]
+        [Route("{id}", Name = "PartialUpdateUserAsync")]
+        public async Task<IActionResult> PartualUpdateUserAsync(Guid id,
+            [FromBody] JsonPatchDocument<ModelsDto.UsuarioForUpdateDto> PatchDoc)
+        {
+            if (PatchDoc == null) return BadRequest();
+
+            if (!await _userRolesRepository.UserExists(id)) return NotFound();
+
+            // Getting user from db
+            var userEntity = await _userRolesRepository.GetUserAsync(id);
+
+            // ModelDto for patch update
+            var userToPatch = _mapper.Map<ModelsDto.UsuarioForUpdateDto>(userEntity);
+
+            PatchDoc.ApplyTo(userToPatch, ModelState);
+
+            if (!ModelState.IsValid) return new UnprocessableEntityObjectResult(ModelState);
+
+            // validating model
+            TryValidateModel(userToPatch);
+
+            // Checking model state after update
+            if (!ModelState.IsValid) return new UnprocessableEntityObjectResult(ModelState);
+
+            // mapping all updated info to a Entity model
+            _mapper.Map(userToPatch, userEntity);
+
+            // Applying update, making context aware of changes
+            _userRolesRepository.UpdateUser(userEntity);
+
+            if (!await _userRolesRepository.SaveChangesAsync())
+            {
+                //throw new Exception($"Error al momento de guardar los cambios - Actualizando {userId}");
+                return BadRequest();
+            }
+
+            return NoContent();
+        }
 
 
         [HttpDelete]

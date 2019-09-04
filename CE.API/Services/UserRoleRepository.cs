@@ -62,7 +62,7 @@ namespace CE.API.Services
         public void UpdateUser(Usuario usuario)
         {
             // no code in this implementation
-            _context.Usuario.Attach(usuario);
+           // _context.Usuario.Attach(usuario);
         }
 
         public async Task<bool> UserExists(Guid userId)
