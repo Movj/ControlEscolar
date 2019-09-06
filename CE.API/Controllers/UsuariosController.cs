@@ -28,7 +28,7 @@ namespace CE.API.Controllers
 
         [HttpGet]
         [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
-        public async Task<IActionResult> GetUsersAsync(Guid userId)
+        public async Task<IActionResult> GetUsersAsync()
         { 
             //var userEntity = await _userRolesRepository.GetUsersAsync();
             var userEntity = await _userService.GetUsersAsync();

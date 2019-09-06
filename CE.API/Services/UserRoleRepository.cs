@@ -29,6 +29,7 @@ namespace CE.API.Services
 
         public async Task<IEnumerable<Usuario>> GetUsersListAsync()
         {
+            // var userRoles = _context.RolesUsuario.Include(i => i.Usuario).Include(r => r.Role);
             return await _context.Usuario.AsNoTracking().ToListAsync();
         }
 

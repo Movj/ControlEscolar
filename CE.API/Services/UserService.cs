@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CE.API.Entities;
-using CE.API.Services.Communication;
 
 namespace CE.API.Services
 {
@@ -20,22 +19,6 @@ namespace CE.API.Services
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-        }
-
-        public async Task<UserResponse> DeleteAsync(Entities.Usuario user)
-        {
-            // For demo purposes we'll use a simple try catch
-            try
-            {
-                _userRepository.Remove(user);
-                await _unitOfWork.CompleteAsync();
-
-                return new Communication.UserResponse(user);
-            }
-            catch (Exception ex)
-            {
-                return new Communication.UserResponse($"An error occurred when saving the category: {ex.Message}");
-            }
         }
 
         public async Task<Usuario> FindUserAsync(Guid id)
@@ -74,6 +57,22 @@ namespace CE.API.Services
             {
                 _userRepository.Update(user);
                 await _unitOfWork.CompleteAsync();
+                return new Communication.UserResponse(user);
+            }
+            catch (Exception ex)
+            {
+                return new Communication.UserResponse($"An error occurred when saving the category: {ex.Message}");
+            }
+        }
+
+        public async Task<Communication.UserResponse> DeleteAsync(Entities.Usuario user)
+        {
+            // For demo purposes we'll use a simple try catch
+            try
+            {
+                _userRepository.Remove(user);
+                await _unitOfWork.CompleteAsync();
+
                 return new Communication.UserResponse(user);
             }
             catch (Exception ex)
