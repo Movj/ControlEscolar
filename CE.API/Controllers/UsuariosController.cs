@@ -14,14 +14,14 @@ namespace CE.API.Controllers
     [ApiController]
     public class UsuariosController : ControllerBase
     {
-        private IUserRolesRepository _userRolesRepository;
+        private IUserService _userService;
         private IMapper _mapper;
 
-        public UsuariosController(IUserRolesRepository userRolesRepository,
+        public UsuariosController(IUserService userService,
             IMapper mapper)
         {
-            _userRolesRepository = userRolesRepository
-                ?? throw new ArgumentNullException(nameof(userRolesRepository));
+           _userService = userService
+                ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
         }
@@ -30,7 +30,8 @@ namespace CE.API.Controllers
         [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
         public async Task<IActionResult> GetUsersAsync(Guid userId)
         { 
-            var userEntity = await _userRolesRepository.GetUsersAsync();
+            //var userEntity = await _userRolesRepository.GetUsersAsync();
+            var userEntity = await _userService.GetUsersAsync();
             return Ok(userEntity);
         }
 
@@ -39,9 +40,9 @@ namespace CE.API.Controllers
         [ServiceFilter(typeof(Filters.UserMinInfoResultFilterAttribute))]
         public async Task<IActionResult> GetUserAsync(Guid userId)
         {
-            if (!await _userRolesRepository.UserExists(userId)) return NotFound();
+            var userEntity = await _userService.FindUserAsync(userId);
 
-            var userEntity = await _userRolesRepository.GetUserAsync(userId);
+            if (userEntity == null) return NotFound();
 
             return Ok(userEntity);
         }
@@ -49,7 +50,7 @@ namespace CE.API.Controllers
         [HttpPost]
         [ServiceFilter(typeof(Filters.UserMinInfoResultFilterAttribute))]
         public async Task<IActionResult> CreateUserAsync([FromBody] ModelsDto.UsuarioForCreationDto userToCreate)
-            {
+        {
             // Use BadRequest for errors from client
             if (userToCreate == null) return BadRequest();
 
@@ -58,18 +59,17 @@ namespace CE.API.Controllers
 
             var userEntity = _mapper.Map<Entities.Usuario>(userToCreate);
 
-            _userRolesRepository.AddUser(userEntity);
+            var result = await _userService.SaveAsync(userEntity);
 
-            if (!await _userRolesRepository.SaveChangesAsync())
-            {
-                throw new Exception($"Error al momento de guardar los cambios - Creando usuario");
-            }
+            if (!result.Success)
+                return BadRequest(result.Message);
 
-            var userToReturn = await _userRolesRepository.GetUserAsync(userEntity.Id);
+            //var userToReturn = await _userRolesRepository.GetUserAsync(userEntity.Id);
 
-            return CreatedAtRoute("GetUserMinInfo",
-                new { userId = userEntity.Id },
-                userToReturn);
+            //return CreatedAtRoute("GetUserMinInfo",
+            //    new { userId = userEntity.Id },
+            //    userToReturn);
+            return Ok(userEntity);
         }
 
         [HttpPut]
@@ -79,25 +79,23 @@ namespace CE.API.Controllers
         {
             if (userForUpdate == null) return BadRequest();
 
-            if (!await _userRolesRepository.UserExists(userId)) return NotFound();
+            var userEntity = await _userService.FindUserAsync(userId);
 
-            // Getting user from db
-            var userEntity = await _userRolesRepository.GetUserAsync(userId);
+            if (userEntity == null) return NotFound();
 
-            // Mapping
+            // get the user from the repository
+
+            //// Mapping
             _mapper.Map(userForUpdate, userEntity);
 
             // Checking model state after update
             if (!ModelState.IsValid) return new UnprocessableEntityObjectResult(ModelState);
 
-            // Applying update, making context aware of changes
-            _userRolesRepository.UpdateUser(userEntity);
+            //// Applying update, making context aware of changes
+            var result = await _userService.UpdateAsync(userEntity);
 
-            if (!await _userRolesRepository.SaveChangesAsync())
-            {
-                //throw new Exception($"Error al momento de guardar los cambios - Actualizando {userId}");
-                return BadRequest();
-            }
+            if (!result.Success)
+                return BadRequest(result.Message);
 
             return NoContent();
         }
@@ -109,10 +107,10 @@ namespace CE.API.Controllers
         {
             if (PatchDoc == null) return BadRequest();
 
-            if (!await _userRolesRepository.UserExists(id)) return NotFound();
-
             // Getting user from db
-            var userEntity = await _userRolesRepository.GetUserAsync(id);
+            var userEntity = await _userService.FindUserAsync(id);
+
+            if (userEntity == null) return NotFound();
 
             // ModelDto for patch update
             var userToPatch = _mapper.Map<ModelsDto.UsuarioForUpdateDto>(userEntity);
@@ -131,13 +129,10 @@ namespace CE.API.Controllers
             _mapper.Map(userToPatch, userEntity);
 
             // Applying update, making context aware of changes
-            _userRolesRepository.UpdateUser(userEntity);
+            var result = await _userService.UpdateAsync(userEntity);
 
-            if (!await _userRolesRepository.SaveChangesAsync())
-            {
-                //throw new Exception($"Error al momento de guardar los cambios - Actualizando {userId}");
-                return BadRequest();
-            }
+            if (!result.Success)
+                return BadRequest(result.Message);
 
             return NoContent();
         }
@@ -149,19 +144,15 @@ namespace CE.API.Controllers
         {
             if (id == null) return BadRequest();
 
-            if (!await _userRolesRepository.UserExists(id))
-            {
-                return NotFound();
-            }
+            // Getting user from db
+            var userEntity = await _userService.FindUserAsync(id);
 
-            var userToDelete = await _userRolesRepository.GetUserAsync(id);
+            if (userEntity == null) return NotFound();
 
-            _userRolesRepository.DeleteUser(userToDelete);
+            var result = await _userService.DeleteAsync(userEntity);
 
-            if (!await _userRolesRepository.SaveChangesAsync())
-            {
-                throw new Exception($"Error al momento de guardar los cambios - Eliminación {id}");
-            }
+            if (!result.Success)
+                return BadRequest(result.Message);
 
             return NoContent();
         }
