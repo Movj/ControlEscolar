@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using CE.API.Services;
 using AutoMapper;
+using CE.API.Services.PaginationServices;
 
 namespace CE.API
 {
@@ -52,6 +53,11 @@ namespace CE.API
             // Registering Services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Transient is used for lightweight services
+            // services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+            services.AddTransient(typeof(IPropertyMappingService<,>), typeof(PropertyMappingService<,>));
+            //services.AddTransient<ITypeHelperService, TypeHelperService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

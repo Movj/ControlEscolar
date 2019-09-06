@@ -8,7 +8,7 @@ using CE.API.Services.Communication;
 
 namespace CE.API.Services.RolesServices
 {
-    public class RoleService : IUserService
+    public class RoleService : IRoleService
     {
         private IUnitOfWork _unitOfWork;
         private IMapper _mapper;
@@ -21,27 +21,28 @@ namespace CE.API.Services.RolesServices
             _mapper = mapper;
             _roleRepository = roleRepository;
         }
-        public Task<UserResponse> DeleteAsync(Usuario user)
+
+        public Task<RoleResponse> DeleteAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Usuario> FindUserAsync(Guid id)
+        public Task<Role> FindRoleAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Usuario>> GetUsersAsync()
+        public Task<IEnumerable<Role>> GetRolesAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<UserResponse> SaveAsync(Usuario user)
+        public Task<RoleResponse> SaveAsync(Role role)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UserResponse> UpdateAsync(Usuario user)
+        public Task<RoleResponse> UpdateAsync(Role role)
         {
             throw new NotImplementedException();
         }

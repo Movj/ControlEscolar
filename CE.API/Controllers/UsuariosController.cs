@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CE.API.Helpers;
 using CE.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -28,10 +29,11 @@ namespace CE.API.Controllers
 
         [HttpGet]
         [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
-        public async Task<IActionResult> GetUsersAsync()
+        public async Task<IActionResult> GetUsersAsync([FromQuery] ResourceParameters resourceParameters)
         { 
             //var userEntity = await _userRolesRepository.GetUsersAsync();
-            var userEntity = await _userService.GetUsersAsync();
+            // Return a pagedList
+            var userEntity = await _userService.GetUsersAsync(resourceParameters);
             return Ok(userEntity);
         }
 
