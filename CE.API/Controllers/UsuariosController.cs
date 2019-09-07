@@ -3,6 +3,7 @@ using CE.API.Helpers;
 using CE.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,12 +30,20 @@ namespace CE.API.Controllers
 
         [HttpGet]
         [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
-        public async Task<IActionResult> GetUsersAsync([FromQuery] ResourceParameters resourceParameters)
-        { 
+        public IActionResult GetUsers([FromQuery] ResourceParameters resourceParameters)
+        {
             //var userEntity = await _userRolesRepository.GetUsersAsync();
             // Return a pagedList
-            var userEntity = await _userService.GetUsersAsync(resourceParameters);
-            return Ok(userEntity);
+            var (paginationMetadata, pagedList) = ((object, PagedList<Entities.Usuario>))_userService.GetUsersPagedList(resourceParameters);
+
+            if (paginationMetadata == null && pagedList == null)
+            {
+                return BadRequest();
+            }
+            Response.Headers.Add("X-Pagination",
+                JsonConvert.SerializeObject(paginationMetadata));
+
+            return Ok(pagedList);
         }
 
         [HttpGet]

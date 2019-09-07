@@ -38,7 +38,8 @@ namespace CE.API.Filters
             }
 
             // Mapping result from GetUserAsync IActionResult method
-            resultFromAction.Value = _map.Map<IEnumerable<ModelsDto.UsuarioDto>>(resultFromAction.Value);
+            //resultFromAction.Value = _map.Map<IEnumerable<ModelsDto.UsuarioDto>>(resultFromAction.Value);
+            //resultFromAction.Value = _map.Map<IEnumerable<ModelsDto.UsuarioDto>>(resultFromAction.Value);
 
             await next();
         }

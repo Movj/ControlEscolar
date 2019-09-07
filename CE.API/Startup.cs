@@ -14,6 +14,9 @@ using Microsoft.Extensions.Options;
 using CE.API.Services;
 using AutoMapper;
 using CE.API.Services.PaginationServices;
+using CE.API.Extensions;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace CE.API
 {
@@ -57,7 +60,22 @@ namespace CE.API
             // Transient is used for lightweight services
             // services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddTransient(typeof(IPropertyMappingService<,>), typeof(PropertyMappingService<,>));
+            services.AddTransient<IApplySort, ApplySort>();
+
+            services.AddTransient<ICreateResourceUri, CreateResourceUri>();
             //services.AddTransient<ITypeHelperService, TypeHelperService>();
+
+            // This service uses Microsoft.AspNetCore.Infrastructure
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            // this service uses IActionContextAccessor
+            // and, Microsoft.AspNetCore.Mvc.Routing.UrlHelper
+            services.AddScoped<IUrlHelper, UrlHelper>(implementationFactory =>
+            {
+                var actionContext =
+                implementationFactory.GetService<IActionContextAccessor>().ActionContext;
+                return new UrlHelper(actionContext);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

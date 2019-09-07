@@ -6,24 +6,30 @@ using AutoMapper;
 using CE.API.Entities;
 using CE.API.Helpers;
 using CE.API.Services.PaginationServices;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CE.API.Services
 {
     public class UserService : IUserService
     {
-        private IUserRolesRepository _userRepository;
-        private IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
-        private IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> _propertyMappingService;
-
+        private readonly IUserRolesRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> _propertyMappingService;
+        private readonly ICreateResourceUri _createResourceUri;
+        private readonly IUrlHelper _uriHelper;
         public UserService(IUserRolesRepository userRepository,
             IUnitOfWork unitOfWork, IMapper mapper,
-            IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService)
+            IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService,
+            ICreateResourceUri createResourceUri,
+            IUrlHelper uriHelper)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _propertyMappingService = propertyMappingService;
+            _createResourceUri = createResourceUri;
+            _uriHelper = uriHelper;
         }
 
         public async Task<Usuario> FindUserAsync(Guid id)
@@ -31,20 +37,37 @@ namespace CE.API.Services
             return await _userRepository.FindUserAsync(id);
         }
 
-        public async Task<IEnumerable<Usuario>> GetUsersAsync(ResourceParameters resourceParameters)
+        public (object, PagedList<Entities.Usuario>) GetUsersPagedList(ResourceParameters resourceParameters)
         {
             // Change return data type to pagedlist
-            //if (!_propertyMappingService.ValidMappingExistsFor<ModelsDto.UsuarioDto, Entities.Usuario>
-            //    (resourceParameters.OrderBy))
-            //{
-            //    return new List<Usuario>();
-            //}
             if (!_propertyMappingService
                 .ValidMappingExistsFor(resourceParameters.OrderBy, PropertiesMappingProfiles._userPropertyMinInfoMapping))
             {
-                return new List<Usuario>();
+                return (null, null);
             }
-            return await _userRepository.GetUsersListAsync();
+            var usersFromRepo =  _userRepository.GetUsersList(resourceParameters);
+
+            // Generating PagedList metadata
+
+            var previousPageLink = usersFromRepo.HasPrevious ?
+                    _createResourceUri.CreateResource(resourceParameters,
+                    ResourceUriType.PreviousPage, "Authors") : null;
+
+            var nextPageLink = usersFromRepo.HasNext ?
+                _createResourceUri.CreateResource(resourceParameters,
+                ResourceUriType.NextPage, "Authors") : null;
+
+            var paginationMetadata = new
+            {
+                previousPageLink,
+                nextPageLink,
+                totalCount = usersFromRepo.TotalCount,
+                pageSize = usersFromRepo.PageSize,
+                currentPage = usersFromRepo.CurrentPage,
+                totalPages = usersFromRepo.TotalPages
+            };
+
+            return ((paginationMetadata, usersFromRepo));
         }
 
         public async Task<Communication.UserResponse> SaveAsync(Usuario user)

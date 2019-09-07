@@ -3,17 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CE.API.Entities;
+using CE.API.Extensions;
+using CE.API.Helpers;
 using CE.API.ModelsDto;
+using CE.API.Services.PaginationServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace CE.API.Services
 {
     public class UserRoleRepository : BaseRepository, IUserRolesRepository, IDisposable
     {
+        private IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> _propertyMappingService;
+        private IApplySort _applySort;
 
-        public UserRoleRepository(CEDatabaseContext context) : base(context)
+        public UserRoleRepository(CEDatabaseContext context,
+            IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService,
+            IApplySort applySort) : base(context)
         {
-            
+            _propertyMappingService = propertyMappingService;
+            _applySort = applySort;
         }
 
         public async Task AddAsync(Usuario usuario)
@@ -27,10 +35,34 @@ namespace CE.API.Services
             return await _context.Usuario.AsNoTracking().FirstOrDefaultAsync(w=>w.Id == id);
         }
 
-        public async Task<IEnumerable<Usuario>> GetUsersListAsync()
+        public PagedList<Usuario> GetUsersList(ResourceParameters resourceParameters)
         {
             // var userRoles = _context.RolesUsuario.Include(i => i.Usuario).Include(r => r.Role);
-            return await _context.Usuario.AsNoTracking().ToListAsync();
+            //var collectionBeforePaging = _context.Usuario.AsQueryable();
+            IQueryable<Entities.Usuario> collectionBeforePaging = _context.Usuario.AsNoTracking().AsQueryable();
+            var refactoring = _applySort.ApplySort(collectionBeforePaging, resourceParameters.OrderBy, PropertiesMappingProfiles._userPropertyMinInfoMapping);
+
+            //return new PagedList<Usuario>();
+            // Applying querying
+            if (!string.IsNullOrEmpty(resourceParameters.SearchQuery))
+            {
+                // Trim and ignore casing
+                var searchQueryForWhereClause = resourceParameters.SearchQuery
+                    .Trim().ToLowerInvariant();
+
+                refactoring = refactoring
+                    .Where(w => w.Email.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.ApellidoPaterno.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.ApellidoMaterno.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.Nombre.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.CodigoPostal.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.TelefonoCasa.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.TelefonoCelular.ToLowerInvariant().Contains(searchQueryForWhereClause));
+            }
+
+            return PagedList<Usuario>.Create(refactoring,
+                 resourceParameters.pageNumber,
+                 resourceParameters.PageSize);
         }
 
         public void Update(Usuario usuario)
