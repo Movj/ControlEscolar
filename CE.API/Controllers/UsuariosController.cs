@@ -17,8 +17,7 @@ namespace CE.API.Controllers
     public class UsuariosController : ControllerBase
     {
         private IUserService _userService;
-        private IMapper _mapper;
-
+        private readonly IMapper _mapper;
         public UsuariosController(IUserService userService,
             IMapper mapper)
         {
@@ -26,7 +25,7 @@ namespace CE.API.Controllers
                 ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-        }
+        }    
 
         [HttpGet]
         [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
@@ -34,7 +33,7 @@ namespace CE.API.Controllers
         {
             //var userEntity = await _userRolesRepository.GetUsersAsync();
             // Return a pagedList
-            var (paginationMetadata, pagedList) = ((object, PagedList<Entities.Usuario>))_userService.GetUsersPagedList(resourceParameters);
+            var (paginationMetadata, pagedList) = ((object, PagedList<ModelsDto.UsuarioDto>)) _userService.GetUsersPagedList(resourceParameters);
 
             if (paginationMetadata == null && pagedList == null)
             {

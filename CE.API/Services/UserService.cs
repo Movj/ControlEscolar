@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CE.API.Entities;
+using CE.API.Extensions;
 using CE.API.Helpers;
 using CE.API.Services.PaginationServices;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,15 @@ namespace CE.API.Services
         private readonly IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> _propertyMappingService;
         private readonly ICreateResourceUri _createResourceUri;
         private readonly IUrlHelper _uriHelper;
+        private readonly IApplySort _applySort;
+
+
         public UserService(IUserRolesRepository userRepository,
             IUnitOfWork unitOfWork, IMapper mapper,
             IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService,
             ICreateResourceUri createResourceUri,
-            IUrlHelper uriHelper)
+            IUrlHelper uriHelper,
+            IApplySort applySort )
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
@@ -30,6 +35,7 @@ namespace CE.API.Services
             _propertyMappingService = propertyMappingService;
             _createResourceUri = createResourceUri;
             _uriHelper = uriHelper;
+            _applySort = applySort;
         }
 
         public async Task<Usuario> FindUserAsync(Guid id)
@@ -37,7 +43,7 @@ namespace CE.API.Services
             return await _userRepository.FindUserAsync(id);
         }
 
-        public (object, PagedList<Entities.Usuario>) GetUsersPagedList(ResourceParameters resourceParameters)
+        public (object, PagedList<ModelsDto.UsuarioDto>) GetUsersPagedList(ResourceParameters resourceParameters)
         {
             // Change return data type to pagedlist
             if (!_propertyMappingService
@@ -45,15 +51,52 @@ namespace CE.API.Services
             {
                 return (null, null);
             }
-            var usersFromRepo =  _userRepository.GetUsersList(resourceParameters);
+            var collectionBeforePaging =  _userRepository.GetUsersList(resourceParameters);
+
+            if (collectionBeforePaging == null) return ((null, null));
+
+            var sortingCollection = 
+                _applySort.ApplySort(collectionBeforePaging, 
+                resourceParameters.OrderBy, 
+                PropertiesMappingProfiles._userPropertyMinInfoMapping);
+
+            
+
+            //return new PagedList<Usuario>();
+            // Applying querying
+            if (!string.IsNullOrEmpty(resourceParameters.SearchQuery))
+            {
+                // Trim and ignore casing
+                var searchQueryForWhereClause = resourceParameters.SearchQuery
+                    .Trim().ToLowerInvariant();
+
+                sortingCollection = sortingCollection
+                    .Where(w => w.Email.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.ApellidoPaterno.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.ApellidoMaterno.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.Nombre.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.CodigoPostal.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.TelefonoCasa.ToLowerInvariant().Contains(searchQueryForWhereClause)
+                    || w.TelefonoCelular.ToLowerInvariant().Contains(searchQueryForWhereClause));
+            }
+
+            var sortedCollection = (IEnumerable<Entities.Usuario>) sortingCollection.ToList();
+
+             var sortedCollectionDto = _mapper.Map<IEnumerable<ModelsDto.UsuarioDto>>(sortedCollection);
+
+            var sortedCollectionIQuerable = sortedCollectionDto.AsQueryable<ModelsDto.UsuarioDto>();
+
+            var pagedList = PagedList<ModelsDto.UsuarioDto>.Create(sortedCollectionIQuerable,
+                resourceParameters.pageNumber,
+                resourceParameters.PageSize);
 
             // Generating PagedList metadata
 
-            var previousPageLink = usersFromRepo.HasPrevious ?
+            var previousPageLink = pagedList.HasPrevious ?
                     _createResourceUri.CreateResource(resourceParameters,
                     ResourceUriType.PreviousPage, "Authors") : null;
 
-            var nextPageLink = usersFromRepo.HasNext ?
+            var nextPageLink = pagedList.HasNext ?
                 _createResourceUri.CreateResource(resourceParameters,
                 ResourceUriType.NextPage, "Authors") : null;
 
@@ -61,13 +104,13 @@ namespace CE.API.Services
             {
                 previousPageLink,
                 nextPageLink,
-                totalCount = usersFromRepo.TotalCount,
-                pageSize = usersFromRepo.PageSize,
-                currentPage = usersFromRepo.CurrentPage,
-                totalPages = usersFromRepo.TotalPages
+                totalCount = pagedList.TotalCount,
+                pageSize = pagedList.PageSize,
+                currentPage = pagedList.CurrentPage,
+                totalPages = pagedList.TotalPages
             };
 
-            return ((paginationMetadata, usersFromRepo));
+            return ((paginationMetadata, pagedList));
         }
 
         public async Task<Communication.UserResponse> SaveAsync(Usuario user)

@@ -15,7 +15,7 @@ namespace CE.API.Services
 
         // For Get
         //Task<IEnumerable<Entities.Usuario>> GetUsersListAsync();
-        PagedList<Entities.Usuario> GetUsersList(ResourceParameters resourceParameters);
+        IQueryable<Entities.Usuario> GetUsersList(ResourceParameters resourceParameters);
         Task AddAsync(Entities.Usuario user);
         void Update(Entities.Usuario user);
         Task<Entities.Usuario> FindUserAsync(Guid id);
