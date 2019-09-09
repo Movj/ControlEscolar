@@ -13,23 +13,10 @@ namespace CE.API.Services
          * with the DbContext, check them in the implementation class.
          */
 
-        // For Get
-        //Task<IEnumerable<Entities.Usuario>> GetUsersListAsync();
         IQueryable<Entities.Usuario> GetUsersList(ResourceParameters resourceParameters);
         Task AddAsync(Entities.Usuario user);
         void Update(Entities.Usuario user);
         Task<Entities.Usuario> FindUserAsync(Guid id);
         void Remove(Entities.Usuario user);
-        //Task<IEnumerable<Entities.Usuario>> GetUsersFullInfoAsync();
-        //Task<Entities.Usuario> GetUserAsync(Guid userId);
-        //Task<bool> UserExists(Guid userId);
-        //// For Post
-        //void AddUser(Entities.Usuario usuario);
-        //// For Put and patch
-        //void UpdateUser(Entities.Usuario usuario);
-        //// For Delete
-        //void DeleteUser(Entities.Usuario usuario);
-
-        //Task<bool> SaveChangesAsync();
     }
 }

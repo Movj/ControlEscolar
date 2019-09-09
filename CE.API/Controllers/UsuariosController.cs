@@ -173,53 +173,5 @@ namespace CE.API.Controllers
             return NoContent();
         }
 
-        private ModelsDto.UsuarioDto CreateLinksForUser(ModelsDto.UsuarioDto user)
-        {
-            /// HATEOAS implementation on a Links attribute in the dto
-
-            //user.Links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
-            //    new { id = user.Id }),
-            //    "self",
-            //    "GET"));
-
-            //user.Links.Add(
-            //    new LinkDto(_urlHelper.Link("DeleteUserAsync",
-            //    new { id = user.Id }),
-            //    "delete_user",
-            //    "DELETE"));
-
-            //user.Links.Add(
-            //    new LinkDto(_urlHelper.Link("FullUpdateUserAsync",
-            //    new { id = user.Id }),
-            //    "update_user",
-            //    "PUT"));
-
-            //user.Links.Add(
-            //    new LinkDto(_urlHelper.Link("PartialUpdateUserAsync",
-            //    new { id = user.Id }),
-            //    "partially_update_user",
-            //    "PATCH"));
-
-            return user;
-        }
-        private IEnumerable<LinkDto> CreateLinksForUser(Guid id)
-        {
-            /// HATEOAS implementation
-            var links = new List<LinkDto>();
-
-            links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
-                new { id }),
-                "self",
-                "GET"));
-
-            links.Add(
-                new LinkDto(_urlHelper.Link("DeleteUserAsync",
-                new { id }),
-                "delete_user",
-                "DELETE"));
-
-
-            return links;
-        }
     }
 }
