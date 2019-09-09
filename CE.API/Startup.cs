@@ -70,8 +70,6 @@ namespace CE.API
             services.AddTransient<IApplySort, ApplySort>();
 
             services.AddTransient<ICreateResourceUri, CreateResourceUri>();
-            services.AddTransient<ICreatePaginationLinksWrapper, CreatePaginationLinks>();
-            //services.AddTransient<ITypeHelperService, TypeHelperService>();
 
             // This service uses Microsoft.AspNetCore.Infrastructure
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -84,6 +82,8 @@ namespace CE.API
                 implementationFactory.GetService<IActionContextAccessor>().ActionContext;
                 return new UrlHelper(actionContext);
             });
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

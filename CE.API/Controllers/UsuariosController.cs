@@ -54,36 +54,6 @@ namespace CE.API.Controllers
             Response.Headers.Add("X-Pagination",
                 JsonConvert.SerializeObject(paginationMetadata));
 
-            // Creating links to send in the response
-            // 1st param: ResourceParameters
-            // 2nd and 3rd param: boolean properties of PagedList
-            // 4th param: ActionName (without "Get"), used to reference this controller (Get)Users
-            var paginationLinks =
-                _createPaginationLinksWrapper
-                .CreatePaginationLinks(resourceParameters,
-                pagedList.HasNext, pagedList.HasPrevious,
-                "Users");
-
-            // Adding Links for every element
-            
-
-            //// Add its own navigation links to every object in the paged list... 
-            /// HATEOAS IMPLEMENTATION
-            //var listUserWithLinks = new List<object>();
-
-            //foreach (var user in pagedList)
-            //{
-            //    listUserWithLinks.Add(CreateLinksForUser(user));
-            //}
-
-
-            // in the end, return an annonimous object with,
-            // the paginationlist and its links and the general links
-            //var resourceWithLinks = new
-            //{
-            //    users = pagedList,
-            //    links = paginationLinks
-            //};
             return Ok(pagedList);
         }
 
