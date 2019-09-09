@@ -41,8 +41,6 @@ namespace CE.API.Controllers
         //[ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
         public IActionResult GetUsers([FromQuery] ResourceParameters resourceParameters)
         {
-            //var userEntity = await _userRolesRepository.GetUsersAsync();
-
             // Return a pagedList with an IEnulerable Dto obj
             var (paginationMetadata, pagedList) =
                 ((object, PagedList<ModelsDto.UsuarioDto>))_userService.GetUsersPagedList(resourceParameters);
@@ -208,37 +206,6 @@ namespace CE.API.Controllers
                 return BadRequest(result.Message);
 
             return NoContent();
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForUser(Guid id)
-        {
-            var links = new List<LinkDto>();
-
-            // Only links that need the id
-            links.Add(new LinkDto(
-               _urlHelper.Link("GetUserMinInfo", new { id }),
-               "self",
-               "GET"
-               ));
-
-            links.Add(new LinkDto(
-                   _urlHelper.Link("DeleteUserAsync", new { id }),
-                   "delete_user",
-                   "DELETE"
-                   ));
-
-            //links.Add(new LinkDto(
-            //       _urlHelper.Link("CreateChild", new { parentId }),
-            //       "create_child_for_parent",
-            //       "POST"
-            //       ));
-
-            //links.Add(
-            //   new LinkDto(_urlHelper.Link("GetChild", new { parentId = id }),
-            //   "child",
-            //   "GET"));
-
-            return links;
         }
 
         private ModelsDto.UsuarioDto CreateLinksForUser(ModelsDto.UsuarioDto user)
