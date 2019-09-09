@@ -67,23 +67,24 @@ namespace CE.API.Controllers
             // Adding Links for every element
             
 
-            // Add its own navigation links to every object in the paged list...
-            var listUserWithLinks = new List<object>();
+            //// Add its own navigation links to every object in the paged list... 
+            /// HATEOAS IMPLEMENTATION
+            //var listUserWithLinks = new List<object>();
 
-            foreach (var user in pagedList)
-            {
-                listUserWithLinks.Add(CreateLinksForUser(user));
-            }
+            //foreach (var user in pagedList)
+            //{
+            //    listUserWithLinks.Add(CreateLinksForUser(user));
+            //}
 
 
             // in the end, return an annonimous object with,
             // the paginationlist and its links and the general links
-            var resourceWithLinks = new
-            {
-                users = listUserWithLinks,
-                links = paginationLinks
-            };
-            return Ok(resourceWithLinks);
+            //var resourceWithLinks = new
+            //{
+            //    users = pagedList,
+            //    links = paginationLinks
+            //};
+            return Ok(pagedList);
         }
 
         [HttpGet]
@@ -210,30 +211,51 @@ namespace CE.API.Controllers
 
         private ModelsDto.UsuarioDto CreateLinksForUser(ModelsDto.UsuarioDto user)
         {
-            user.Links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
-                new { id = user.Id }),
+            /// HATEOAS implementation on a Links attribute in the dto
+
+            //user.Links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
+            //    new { id = user.Id }),
+            //    "self",
+            //    "GET"));
+
+            //user.Links.Add(
+            //    new LinkDto(_urlHelper.Link("DeleteUserAsync",
+            //    new { id = user.Id }),
+            //    "delete_user",
+            //    "DELETE"));
+
+            //user.Links.Add(
+            //    new LinkDto(_urlHelper.Link("FullUpdateUserAsync",
+            //    new { id = user.Id }),
+            //    "update_user",
+            //    "PUT"));
+
+            //user.Links.Add(
+            //    new LinkDto(_urlHelper.Link("PartialUpdateUserAsync",
+            //    new { id = user.Id }),
+            //    "partially_update_user",
+            //    "PATCH"));
+
+            return user;
+        }
+        private IEnumerable<LinkDto> CreateLinksForUser(Guid id)
+        {
+            /// HATEOAS implementation
+            var links = new List<LinkDto>();
+
+            links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
+                new { id }),
                 "self",
                 "GET"));
 
-            user.Links.Add(
+            links.Add(
                 new LinkDto(_urlHelper.Link("DeleteUserAsync",
-                new { id = user.Id }),
+                new { id }),
                 "delete_user",
                 "DELETE"));
 
-            user.Links.Add(
-                new LinkDto(_urlHelper.Link("FullUpdateUserAsync",
-                new { id = user.Id }),
-                "update_user",
-                "PUT"));
 
-            user.Links.Add(
-                new LinkDto(_urlHelper.Link("PartialUpdateUserAsync",
-                new { id = user.Id }),
-                "partially_update_user",
-                "PATCH"));
-
-            return user;
+            return links;
         }
     }
 }

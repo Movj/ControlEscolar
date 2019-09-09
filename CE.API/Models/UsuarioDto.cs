@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CE.API.ModelsDto
 {
-    public class UsuarioDto : LinkedResourceBaseDto
+    public class UsuarioDto
     {
         public Guid Id { get; set; }
         public string Email { get; set; }
