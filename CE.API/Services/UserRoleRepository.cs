@@ -53,63 +53,6 @@ namespace CE.API.Services
         }
 
 
-
-        //public void AddUser(Usuario usuario)
-        //{
-        //    if (usuario != null)
-        //    {
-        //        if (usuario.Id == Guid.Empty)
-        //        {
-        //            usuario.Id = Guid.NewGuid();
-        //        }
-        //        _context.Usuario.Add(usuario);
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentNullException(nameof(usuario));
-        //    }
-
-        //}
-
-        //public void DeleteUser(Usuario usuario)
-        //{
-        //    _context.Usuario.Remove(usuario);
-        //}
-
-        //public async Task<Usuario> GetUserAsync(Guid userId)
-        //{
-        //    return await _context.Usuario.FindAsync(userId);
-        //}
-
-        //public async Task<IEnumerable<Usuario>> GetUsersAsync()
-        //{
-        //    return await _context.Usuario.ToListAsync();
-        //}
-
-        //public Task<IEnumerable<Usuario>> GetUsersFullInfoAsync()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-
-        //public async Task<bool> SaveChangesAsync()
-        //{
-        //    return (await _context.SaveChangesAsync() > 0);
-        //}
-
-        //public void UpdateUser(Usuario usuario)
-        //{
-        //    // no code in this implementation
-        //   // _context.Usuario.Attach(usuario);
-        //}
-
-        //public async Task<bool> UserExists(Guid userId)
-        //{
-        //    var userEntity = await _context.Usuario.FirstOrDefaultAsync(w => w.Id == userId);
-        //    if (userEntity == null) return false;
-        //    return true;
-        //}
-
         public void Dispose()
         {
             Dispose(true);

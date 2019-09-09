@@ -8,6 +8,7 @@ using CE.API.Extensions;
 using CE.API.Helpers;
 using CE.API.Services.PaginationServices;
 using Microsoft.AspNetCore.Mvc;
+using static CE.API.Models.PaginationLinkDto;
 
 namespace CE.API.Services
 {
@@ -20,14 +21,14 @@ namespace CE.API.Services
         private readonly ICreateResourceUri _createResourceUri;
         private readonly IUrlHelper _uriHelper;
         private readonly IApplySort _applySort;
-
-
+        private readonly IUrlHelper _urlHelper;
         public UserService(IUserRolesRepository userRepository,
             IUnitOfWork unitOfWork, IMapper mapper,
             IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService,
             ICreateResourceUri createResourceUri,
             IUrlHelper uriHelper,
-            IApplySort applySort )
+            IApplySort applySort,
+            IUrlHelper urlHelper)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
@@ -36,6 +37,7 @@ namespace CE.API.Services
             _createResourceUri = createResourceUri;
             _uriHelper = uriHelper;
             _applySort = applySort;
+            _urlHelper = urlHelper;
         }
 
         public async Task<Usuario> FindUserAsync(Guid id)
@@ -51,18 +53,18 @@ namespace CE.API.Services
             {
                 return (null, null);
             }
+
+            // Getting an IQuerable obj of Entities.Usuario
             var collectionBeforePaging =  _userRepository.GetUsersList(resourceParameters);
 
             if (collectionBeforePaging == null) return ((null, null));
 
+            // Using sorting service into IQuerable obj
             var sortingCollection = 
                 _applySort.ApplySort(collectionBeforePaging, 
                 resourceParameters.OrderBy, 
                 PropertiesMappingProfiles._userPropertyMinInfoMapping);
 
-            
-
-            //return new PagedList<Usuario>();
             // Applying querying
             if (!string.IsNullOrEmpty(resourceParameters.SearchQuery))
             {
@@ -80,37 +82,47 @@ namespace CE.API.Services
                     || w.TelefonoCelular.ToLowerInvariant().Contains(searchQueryForWhereClause));
             }
 
+            // Parsing IQuerable obj to a IEnumerable obj in order to map them
             var sortedCollection = (IEnumerable<Entities.Usuario>) sortingCollection.ToList();
 
+            // Mapping from IEnumerable<Entities.Usuario> to a UsuarioDto model
              var sortedCollectionDto = _mapper.Map<IEnumerable<ModelsDto.UsuarioDto>>(sortedCollection);
 
-            var sortedCollectionIQuerable = sortedCollectionDto.AsQueryable<ModelsDto.UsuarioDto>();
 
-            var pagedList = PagedList<ModelsDto.UsuarioDto>.Create(sortedCollectionIQuerable,
+            // Parsing them again in order to add them to a PagedList<T>
+            var sortedCollectionIQuerableDto = sortedCollectionDto.AsQueryable<ModelsDto.UsuarioDto>();
+
+            var pagedListDto = PagedList<ModelsDto.UsuarioDto>.Create(sortedCollectionIQuerableDto,
                 resourceParameters.pageNumber,
                 resourceParameters.PageSize);
 
             // Generating PagedList metadata
+            // Creating links to send in the response with _createResourceUri service
+            // 1st param: ResourceParameters
+            // 2nd and 3rd param: boolean properties of PagedList
+            // 4th param: ActionName (without "Get"), used to reference its controller (Get)Users
 
-            var previousPageLink = pagedList.HasPrevious ?
+            var previousPageLink = pagedListDto.HasPrevious ?
                     _createResourceUri.CreateResource(resourceParameters,
-                    ResourceUriType.PreviousPage, "Authors") : null;
+                    ResourceUriType.PreviousPage, "Users") : null;
 
-            var nextPageLink = pagedList.HasNext ?
+            var nextPageLink = pagedListDto.HasNext ?
                 _createResourceUri.CreateResource(resourceParameters,
-                ResourceUriType.NextPage, "Authors") : null;
+                ResourceUriType.NextPage, "Users") : null;
 
             var paginationMetadata = new
             {
                 previousPageLink,
                 nextPageLink,
-                totalCount = pagedList.TotalCount,
-                pageSize = pagedList.PageSize,
-                currentPage = pagedList.CurrentPage,
-                totalPages = pagedList.TotalPages
+                totalCount = pagedListDto.TotalCount,
+                pageSize = pagedListDto.PageSize,
+                currentPage = pagedListDto.CurrentPage,
+                totalPages = pagedListDto.TotalPages
             };
 
-            return ((paginationMetadata, pagedList));
+
+            // Returning a tuple of: object metadata and PagedList<T>
+            return ((paginationMetadata, pagedListDto));
         }
 
         public async Task<Communication.UserResponse> SaveAsync(Usuario user)
@@ -162,5 +174,6 @@ namespace CE.API.Services
                 return new Communication.UserResponse($"An error occurred when saving the category: {ex.Message}");
             }
         }
+
     }
 }

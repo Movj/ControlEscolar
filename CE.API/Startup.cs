@@ -17,6 +17,7 @@ using CE.API.Services.PaginationServices;
 using CE.API.Extensions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Newtonsoft.Json.Serialization;
 
 namespace CE.API
 {
@@ -32,14 +33,20 @@ namespace CE.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                })
+            .AddXmlDataContractSerializerFormatters();
             // Using connections strings
             var connectionStrings = Configuration["ConnectionStrings:CEDBConnectionString"];
             // Registering dbcontext in the container
             services.AddDbContext<Entities.CEDatabaseContext>(o => o.UseSqlServer(connectionStrings));
 
             // Adding AutoMapper configuration
-            var mapperConfig = new MapperConfiguration(cfg => {
+            var mapperConfig = new MapperConfiguration(cfg =>
+            {
                 cfg.AddProfile(new AutoMapperProfiles.UsuarioProfile());
             });
 
@@ -63,6 +70,7 @@ namespace CE.API
             services.AddTransient<IApplySort, ApplySort>();
 
             services.AddTransient<ICreateResourceUri, CreateResourceUri>();
+            services.AddTransient<ICreatePaginationLinksWrapper, CreatePaginationLinks>();
             //services.AddTransient<ITypeHelperService, TypeHelperService>();
 
             // This service uses Microsoft.AspNetCore.Infrastructure

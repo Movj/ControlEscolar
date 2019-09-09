@@ -1,63 +1,106 @@
 ﻿using AutoMapper;
 using CE.API.Helpers;
 using CE.API.Services;
+using CE.API.Services.PaginationServices;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static CE.API.Models.PaginationLinkDto;
 
 namespace CE.API.Controllers
 {
-    
+
     [Route("api/usuarios")]
     [ApiController]
     public class UsuariosController : ControllerBase
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        private readonly ICreatePaginationLinksWrapper _createPaginationLinksWrapper;
+        private readonly IUrlHelper _urlHelper;
         public UsuariosController(IUserService userService,
-            IMapper mapper)
+            IMapper mapper,
+            ICreatePaginationLinksWrapper createPaginationLinksWrapper,
+            IUrlHelper urlHelper)
         {
-           _userService = userService
-                ?? throw new ArgumentNullException(nameof(userService));
+            _userService = userService
+                 ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-        }    
 
-        [HttpGet]
-        [ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
+            _createPaginationLinksWrapper = createPaginationLinksWrapper
+                ?? throw new ArgumentNullException(nameof(createPaginationLinksWrapper));
+            _urlHelper = urlHelper
+                ?? throw new ArgumentNullException(nameof(urlHelper));
+        }
+
+        [HttpGet(Name = "GetUsers")]
+        //[ServiceFilter(typeof(Filters.UsersMinInfoResultFilterAttribute))]
         public IActionResult GetUsers([FromQuery] ResourceParameters resourceParameters)
         {
             //var userEntity = await _userRolesRepository.GetUsersAsync();
-            // Return a pagedList
-            var (paginationMetadata, pagedList) = ((object, PagedList<ModelsDto.UsuarioDto>)) _userService.GetUsersPagedList(resourceParameters);
+
+            // Return a pagedList with an IEnulerable Dto obj
+            var (paginationMetadata, pagedList) =
+                ((object, PagedList<ModelsDto.UsuarioDto>))_userService.GetUsersPagedList(resourceParameters);
 
             if (paginationMetadata == null && pagedList == null)
             {
                 return BadRequest();
             }
+
+            // Adding pagination headers to response
             Response.Headers.Add("X-Pagination",
                 JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(pagedList);
+            // Creating links to send in the response
+            // 1st param: ResourceParameters
+            // 2nd and 3rd param: boolean properties of PagedList
+            // 4th param: ActionName (without "Get"), used to reference this controller (Get)Users
+            var paginationLinks =
+                _createPaginationLinksWrapper
+                .CreatePaginationLinks(resourceParameters,
+                pagedList.HasNext, pagedList.HasPrevious,
+                "Users");
+
+            // Adding Links for every element
+            
+
+            // Add its own navigation links to every object in the paged list...
+            var listUserWithLinks = new List<object>();
+
+            foreach (var user in pagedList)
+            {
+                listUserWithLinks.Add(CreateLinksForUser(user));
+            }
+
+
+            // in the end, return an annonimous object with,
+            // the paginationlist and its links and the general links
+            var resourceWithLinks = new
+            {
+                users = listUserWithLinks,
+                links = paginationLinks
+            };
+            return Ok(resourceWithLinks);
         }
 
         [HttpGet]
-        [Route("{userId}", Name = "GetUserMinInfo")]
+        [Route("{id}", Name = "GetUserMinInfo")]
         [ServiceFilter(typeof(Filters.UserMinInfoResultFilterAttribute))]
-        public async Task<IActionResult> GetUserAsync(Guid userId)
+        public async Task<IActionResult> GetUserAsync(Guid id)
         {
-            var userEntity = await _userService.FindUserAsync(userId);
+            var userEntity = await _userService.FindUserAsync(id);
 
             if (userEntity == null) return NotFound();
 
             return Ok(userEntity);
         }
 
-        [HttpPost]
+        [HttpPost(Name = "CreateUserAsync")]
         [ServiceFilter(typeof(Filters.UserMinInfoResultFilterAttribute))]
         public async Task<IActionResult> CreateUserAsync([FromBody] ModelsDto.UsuarioForCreationDto userToCreate)
         {
@@ -83,13 +126,13 @@ namespace CE.API.Controllers
         }
 
         [HttpPut]
-        [Route("{userId}", Name = "FullUpdateUserAsync")]
-        public async Task<IActionResult> UpdateUserAsync(Guid userId,
+        [Route("{id}", Name = "FullUpdateUserAsync")]
+        public async Task<IActionResult> UpdateUserAsync(Guid id,
             [FromBody] ModelsDto.UsuarioForUpdateDto userForUpdate)
         {
             if (userForUpdate == null) return BadRequest();
 
-            var userEntity = await _userService.FindUserAsync(userId);
+            var userEntity = await _userService.FindUserAsync(id);
 
             if (userEntity == null) return NotFound();
 
@@ -149,7 +192,7 @@ namespace CE.API.Controllers
 
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id}", Name = "DeleteUserAsync")]
         public async Task<IActionResult> RemoveUserAsync(Guid id)
         {
             if (id == null) return BadRequest();
@@ -165,6 +208,65 @@ namespace CE.API.Controllers
                 return BadRequest(result.Message);
 
             return NoContent();
+        }
+
+        private IEnumerable<LinkDto> CreateLinksForUser(Guid id)
+        {
+            var links = new List<LinkDto>();
+
+            // Only links that need the id
+            links.Add(new LinkDto(
+               _urlHelper.Link("GetUserMinInfo", new { id }),
+               "self",
+               "GET"
+               ));
+
+            links.Add(new LinkDto(
+                   _urlHelper.Link("DeleteUserAsync", new { id }),
+                   "delete_user",
+                   "DELETE"
+                   ));
+
+            //links.Add(new LinkDto(
+            //       _urlHelper.Link("CreateChild", new { parentId }),
+            //       "create_child_for_parent",
+            //       "POST"
+            //       ));
+
+            //links.Add(
+            //   new LinkDto(_urlHelper.Link("GetChild", new { parentId = id }),
+            //   "child",
+            //   "GET"));
+
+            return links;
+        }
+
+        private ModelsDto.UsuarioDto CreateLinksForUser(ModelsDto.UsuarioDto user)
+        {
+            user.Links.Add(new LinkDto(_urlHelper.Link("GetUserMinInfo",
+                new { id = user.Id }),
+                "self",
+                "GET"));
+
+            user.Links.Add(
+                new LinkDto(_urlHelper.Link("DeleteUserAsync",
+                new { id = user.Id }),
+                "delete_user",
+                "DELETE"));
+
+            user.Links.Add(
+                new LinkDto(_urlHelper.Link("FullUpdateUserAsync",
+                new { id = user.Id }),
+                "update_user",
+                "PUT"));
+
+            user.Links.Add(
+                new LinkDto(_urlHelper.Link("PartialUpdateUserAsync",
+                new { id = user.Id }),
+                "partially_update_user",
+                "PATCH"));
+
+            return user;
         }
     }
 }
