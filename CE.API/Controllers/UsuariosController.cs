@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using CE.API.Helpers;
 using CE.API.Services;
-using CE.API.Services.PaginationServices;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -19,20 +18,15 @@ namespace CE.API.Controllers
     {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-        private readonly ICreatePaginationLinksWrapper _createPaginationLinksWrapper;
         private readonly IUrlHelper _urlHelper;
         public UsuariosController(IUserService userService,
             IMapper mapper,
-            ICreatePaginationLinksWrapper createPaginationLinksWrapper,
             IUrlHelper urlHelper)
         {
             _userService = userService
                  ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper
                 ?? throw new ArgumentNullException(nameof(mapper));
-
-            _createPaginationLinksWrapper = createPaginationLinksWrapper
-                ?? throw new ArgumentNullException(nameof(createPaginationLinksWrapper));
             _urlHelper = urlHelper
                 ?? throw new ArgumentNullException(nameof(urlHelper));
         }
