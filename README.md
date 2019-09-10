@@ -10,5 +10,3 @@ Además, se utilizó las librería <strong>LINQ</strong> para el uso de Queryies
 The porpuse of this project is to build a <strong>RESTful API</strong>, using <strong>ASP.NET Core version 2.1</strong>. This web application is based on the <strong>MVC architecture</strong>, for the API endpints, supporting and implementing <strong>async calls</strong>. Also, it's been designed and implemented <strong>services</strong> using <strong>Dependency Injection</strong>, and based on the design patterns: <strong>Unit of Work</strong> and <strong>Repository pattern</strong>.
 
 This project uses, for the database connection and comunication, the libraries of <strong>Entity Framework</strong> Core using <strong>Database first approach</strong>, on a <strong>SQL Server</strong> database. It's been applied reverse engineer to abstract the database structure (through <strong>Entity Framework Scaffolding</strong>). In addition, this API works with <strong>LINQ</strong> library for querying and <strong>Automapper</strong> for object to object mapping, in order to use <strong>Data Transfer Objects</strong> (DTOs) or MVVM pattern.
-
-<strong></strong>
