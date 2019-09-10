@@ -23,7 +23,9 @@ namespace CE.API.AutoMapperProfiles
 
             CreateMap<ModelsDto.UsuarioForCreationDto, Entities.Usuario>();
 
-
+            CreateMap<Entities.Usuario, Models.UsuarioRolesDto>()
+                .ForMember(dest => dest.NombreCompleto, opt =>
+                opt.MapFrom(src => $"{src.ApellidoPaterno} {src.ApellidoMaterno} {src.Nombre}"));
         }
     }
 }

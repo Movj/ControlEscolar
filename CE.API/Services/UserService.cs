@@ -6,6 +6,8 @@ using AutoMapper;
 using CE.API.Entities;
 using CE.API.Extensions;
 using CE.API.Helpers;
+using CE.API.Models.RoleDtoModels;
+using CE.API.Services.Communication;
 using CE.API.Services.PaginationServices;
 using Microsoft.AspNetCore.Mvc;
 using static CE.API.Models.PaginationLinkDto;
@@ -128,13 +130,17 @@ namespace CE.API.Services
                     user.Id = Guid.NewGuid();
                 }
                 await _userRepository.AddAsync(user);
-                await _unitOfWork.CompleteAsync();
+                var result = await _unitOfWork.CompleteAsync();
 
+                if (!result)
+                {
+                    return new Communication.UserResponse($"An error occurred when saving");
+                }
                 return new Communication.UserResponse(user);
             }
             catch (Exception ex)
             {
-                return new Communication.UserResponse($"An error occurred when saving the category: {ex.Message}");
+                return new Communication.UserResponse($"An error occurred when saving the user: {ex.Message}");
             }
         }
 
@@ -143,7 +149,12 @@ namespace CE.API.Services
             try
             {
                 _userRepository.Update(user);
-                await _unitOfWork.CompleteAsync();
+                var result =  await _unitOfWork.CompleteAsync();
+
+                if (!result)
+                {
+                    return new Communication.UserResponse($"An error occurred when saving");
+                }
                 return new Communication.UserResponse(user);
             }
             catch (Exception ex)
@@ -158,7 +169,12 @@ namespace CE.API.Services
             try
             {
                 _userRepository.Remove(user);
-                await _unitOfWork.CompleteAsync();
+                var result = await _unitOfWork.CompleteAsync();
+
+                if (!result)
+                {
+                    return new Communication.UserResponse($"An error occurred when saving");
+                }
 
                 return new Communication.UserResponse(user);
             }
@@ -168,5 +184,51 @@ namespace CE.API.Services
             }
         }
 
+        public async Task<Models.UsuarioRolesDto> GetRolesForUser(Entities.Usuario user)
+        {
+            // Get all related roles to a specific user
+            var userRoleEntityList = await _userRepository.GetRolesForUserAsync(user.Id);
+
+            Models.UsuarioRolesDto userRoleDto = _mapper.Map<Models.UsuarioRolesDto>(user);
+
+            var roleListDto = new List<Models.RoleDtoModels.RoleDto>();
+            foreach (var item in userRoleEntityList)
+            {
+                var map = _mapper.Map<Models.RoleDtoModels.RoleDto>(item.Role);
+                roleListDto.Add(map);
+            }
+
+            userRoleDto.Roles = roleListDto;
+
+            return userRoleDto;
+        }
+
+        public async Task<bool> AddRoleToUserAsync(Guid userId, Guid roleId)
+        {
+            var userEntity = await _userRepository.FindUserAsync(userId);
+            if (userEntity == null)
+            {
+                return false;
+            }
+            var roleEntity = await _userRepository.GetRoleAsync(roleId);
+            if (roleEntity == null) return false;
+            // For demo purposes we'll use a simple try catch
+                _userRepository.AddRoleToUser(userId, roleId);
+            var result = await _unitOfWork.CompleteAsync();
+            return result;
+        }
+
+        public async Task<Role> FindRoleByNameAsync(string name)
+        {
+            return await _userRepository.FindRoleByNameAsync(name);
+        }
+
+        public async Task<bool> RemoveRoleOfUser(Entities.Role role, Entities.Usuario user)
+        {
+            Entities.RolesUsuario rolesUsuario = new RolesUsuario() { Role = role, Usuario = user };
+            _userRepository.RemoveRoleOfUser(rolesUsuario);
+            var result = await _unitOfWork.CompleteAsync();
+            return result;
+        }
     }
 }

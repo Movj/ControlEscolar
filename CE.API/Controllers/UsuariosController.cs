@@ -174,5 +174,71 @@ namespace CE.API.Controllers
             return NoContent();
         }
 
+        [HttpGet]
+        [Route("{id}/roles", Name = "GetUserUserRoles")]
+        //[ServiceFilter(typeof(Filters.UserMinInfoResultFilterAttribute))]
+        public async Task<IActionResult> GetUserRolesAsync(Guid id)
+        {
+            var userEntity = await _userService.FindUserAsync(id);
+
+            if (userEntity == null) return NotFound();
+
+            var userRoles = await _userService.GetRolesForUser(userEntity);
+
+            if (userRoles == null) return NotFound();
+
+            return Ok(userRoles);
+        }
+
+        [HttpPost]
+        [Route("{id}/roles")]
+        public async Task<IActionResult> AddRoleToUser(Guid id,
+            [FromBody] Models.RoleDtoModels.RoleDto roleDto)
+        {
+            if (roleDto == null) return BadRequest();
+
+            var roleEntity = await _userService.FindRoleByNameAsync(roleDto.RoleName);
+
+            if (roleEntity == null) return NotFound();
+
+            var userEntity = await _userService.FindUserAsync(id);
+
+            if (userEntity == null) return NotFound();
+
+            // add validation of exiting relation
+            var userRoles = await _userService.GetRolesForUser(userEntity);
+
+            if (userRoles.Roles.FindAll(f => f.RoleName == roleEntity.RoleName).Count > 0)
+            {
+                return BadRequest();
+            }
+
+            var response = await _userService.AddRoleToUserAsync(id, roleEntity.Id);
+
+            if (!response) return BadRequest();
+
+            var newUserRoles = await _userService.GetRolesForUser(userEntity);
+
+            return CreatedAtRoute("GetUserUserRoles", new { id = userEntity.Id }, newUserRoles);
+        }
+
+        [HttpDelete]
+        [Route("{userId}/roles")]
+        public async Task<IActionResult> RemoveRoleOfUser([FromQuery] string roleName, Guid userId)
+        {
+            var roleEntity = await _userService.FindRoleByNameAsync(roleName);
+
+            if (roleEntity == null) return NotFound();
+
+            var userEntity = await _userService.FindUserAsync(userId);
+
+            if (userEntity == null) return NotFound();
+
+            var result = await _userService.RemoveRoleOfUser(roleEntity, userEntity);
+
+            if (!result) return BadRequest();
+
+            return NoContent();
+        }
     }
 }

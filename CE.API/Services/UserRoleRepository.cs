@@ -80,5 +80,37 @@ namespace CE.API.Services
         {
             _context.Usuario.Remove(user);
         }
+
+        public async Task<IEnumerable<RolesUsuario>> GetRolesForUserAsync(Guid userId)
+        {
+            return await _context.RolesUsuario.Where(w => w.UsuarioId == userId).Include(i => i.Role).ToListAsync();
+        }
+
+        public void AddRoleToUser(Guid userId, Guid roleId)
+        {
+            var userEntity = _context.Usuario.FirstOrDefault(w => w.Id == userId);
+            var roleEntity = _context.Role.FirstOrDefault(w => w.Id == roleId);
+            var rolesUsuario = new Entities.RolesUsuario
+            {
+                Role = roleEntity,
+                Usuario = userEntity
+            };
+            _context.RolesUsuario.Add(rolesUsuario);
+        }
+
+        public async Task<Role> GetRoleAsync(Guid roleId)
+        {
+            return await _context.Role.FirstOrDefaultAsync(w => w.Id == roleId); 
+        }
+
+        public async Task<Role> FindRoleByNameAsync(string name)
+        {
+            return await _context.Role.Where(w => w.RoleName.Contains(name)).AsNoTracking().FirstOrDefaultAsync();  
+        }
+
+        public void RemoveRoleOfUser(Entities.RolesUsuario roleUSer)
+        {
+            _context.RolesUsuario.Remove(roleUSer);
+        }
     }
 }

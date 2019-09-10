@@ -18,5 +18,10 @@ namespace CE.API.Services
         void Update(Entities.Usuario user);
         Task<Entities.Usuario> FindUserAsync(Guid id);
         void Remove(Entities.Usuario user);
+        Task<IEnumerable<Entities.RolesUsuario>> GetRolesForUserAsync(Guid userId);
+        Task<Entities.Role> GetRoleAsync(Guid roleId);
+        void AddRoleToUser(Guid userId, Guid roleId);
+        Task<Entities.Role> FindRoleByNameAsync(string name);
+        void RemoveRoleOfUser(Entities.RolesUsuario roleUSer);
     }
 }

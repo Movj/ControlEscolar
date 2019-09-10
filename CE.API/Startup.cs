@@ -52,6 +52,7 @@ namespace CE.API
             {
                 cfg.AddProfile(new AutoMapperProfiles.UsuarioProfile());
                 cfg.AddProfile(new AutoMapperProfiles.RoleMappingProfile());
+                cfg.AddProfile(new AutoMapperProfiles.UserRolesMappingProfile());
             });
 
             var mapper = mapperConfig.CreateMapper();
@@ -89,9 +90,9 @@ namespace CE.API
                 return new UrlHelper(actionContext);
             });
 
-            // Services for cache headers
+            // Services for cache headers, MaxAge set to 60s
             services.AddHttpCacheHeaders((expirationOptions) => {
-                expirationOptions.MaxAge = 600;
+                expirationOptions.MaxAge = 60;
             }, (validationModelOptions) => {
                 validationModelOptions.MustRevalidate = true;
             });
@@ -104,18 +105,18 @@ namespace CE.API
             services.Configure<IpRateLimitOptions>((options) => {
                 options.GeneralRules =
                 new List<RateLimitRule>() {
-                    // Accept only 10 request in 5 minutes
+                    // Accept only 100 request in 1 minutes
                     new RateLimitRule
                     {
                         Endpoint = "*",
-                        Limit = 1000,
-                        Period = "5m"
+                        Limit = 100,
+                        Period = "1m"
                     },
-                    // and, two request every 10 seconds
+                    // and, 5 request every 10 seconds
                     new RateLimitRule
                     {
                         Endpoint = "*",
-                        Limit = 200,
+                        Limit = 5,
                         Period = "10s"
                     }
                 };
