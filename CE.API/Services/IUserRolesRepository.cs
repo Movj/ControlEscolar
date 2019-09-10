@@ -13,7 +13,7 @@ namespace CE.API.Services
          * with the DbContext, check them in the implementation class.
          */
 
-        IQueryable<Entities.Usuario> GetUsersList(ResourceParameters resourceParameters);
+        IQueryable<Entities.Usuario> GetUsersList();
         Task AddAsync(Entities.Usuario user);
         void Update(Entities.Usuario user);
         Task<Entities.Usuario> FindUserAsync(Guid id);

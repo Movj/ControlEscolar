@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Newtonsoft.Json.Serialization;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using CE.API.Services.RolesServices;
 
 namespace CE.API
 {
@@ -50,6 +51,7 @@ namespace CE.API
             var mapperConfig = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new AutoMapperProfiles.UsuarioProfile());
+                cfg.AddProfile(new AutoMapperProfiles.RoleMappingProfile());
             });
 
             var mapper = mapperConfig.CreateMapper();
@@ -57,6 +59,7 @@ namespace CE.API
 
             // Registering Repositories
             services.AddScoped<IUserRolesRepository, UserRoleRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
             // Registering Filters
             services.AddScoped<Filters.UserMinInfoResultFilterAttribute>();
@@ -64,6 +67,7 @@ namespace CE.API
 
             // Registering Services
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Transient is used for lightweight services

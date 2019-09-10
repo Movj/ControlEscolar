@@ -16,5 +16,12 @@ namespace CE.API.Services.PaginationServices
                 {"TelefonoCelular", new PropertyMappingValue(new List<string>(){ "Email" }) },
                 {"AnioNacimiento", new PropertyMappingValue(new List<string>(){ "AnioNacimiento"}) }
             };
+
+        public static Dictionary<string, PropertyMappingValue> _rolePropertyMapping =
+            new Dictionary<string, PropertyMappingValue>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"Id", new PropertyMappingValue(new List<string>(){ "Id"}) },
+                {"RoleName", new PropertyMappingValue(new List<string>(){ "RoleName"}) }
+            };
     }
 }

@@ -25,6 +25,6 @@ namespace CE.API.Helpers
         }
 
         public string SearchQuery { get; set; }
-        public string OrderBy { get; set; } = "NombreCompleto";
+        public string OrderBy { get; set; } = "";
     }
 }

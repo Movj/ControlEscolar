@@ -37,7 +37,7 @@ namespace CE.API.Services
             return await _context.Usuario.AsNoTracking().FirstOrDefaultAsync(w=>w.Id == id);
         }
 
-        public IQueryable<Usuario> GetUsersList(ResourceParameters resourceParameters)
+        public IQueryable<Usuario> GetUsersList()
         {
             // var userRoles = _context.RolesUsuario.Include(i => i.Usuario).Include(r => r.Role);
             //var collectionBeforePaging = _context.Usuario.AsQueryable();

@@ -19,25 +19,19 @@ namespace CE.API.Services
         private readonly IMapper _mapper;
         private readonly IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> _propertyMappingService;
         private readonly ICreateResourceUri _createResourceUri;
-        private readonly IUrlHelper _uriHelper;
         private readonly IApplySort _applySort;
-        private readonly IUrlHelper _urlHelper;
         public UserService(IUserRolesRepository userRepository,
             IUnitOfWork unitOfWork, IMapper mapper,
             IPropertyMappingService<ModelsDto.UsuarioDto, Entities.Usuario> propertyMappingService,
             ICreateResourceUri createResourceUri,
-            IUrlHelper uriHelper,
-            IApplySort applySort,
-            IUrlHelper urlHelper)
+            IApplySort applySort)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _propertyMappingService = propertyMappingService;
             _createResourceUri = createResourceUri;
-            _uriHelper = uriHelper;
             _applySort = applySort;
-            _urlHelper = urlHelper;
         }
 
         public async Task<Usuario> FindUserAsync(Guid id)
@@ -55,7 +49,7 @@ namespace CE.API.Services
             }
 
             // Getting an IQuerable obj of Entities.Usuario
-            var collectionBeforePaging =  _userRepository.GetUsersList(resourceParameters);
+            var collectionBeforePaging =  _userRepository.GetUsersList();
 
             if (collectionBeforePaging == null) return ((null, null));
 
@@ -87,7 +81,6 @@ namespace CE.API.Services
 
             // Mapping from IEnumerable<Entities.Usuario> to a UsuarioDto model
              var sortedCollectionDto = _mapper.Map<IEnumerable<ModelsDto.UsuarioDto>>(sortedCollection);
-
 
             // Parsing them again in order to add them to a PagedList<T>
             var sortedCollectionIQuerableDto = sortedCollectionDto.AsQueryable<ModelsDto.UsuarioDto>();

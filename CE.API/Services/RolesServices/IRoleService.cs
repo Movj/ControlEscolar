@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CE.API.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace CE.API.Services.RolesServices
          * roles information and request
          */
 
-        Task<IEnumerable<Entities.Role>> GetRolesAsync();
+        (object, PagedList<Models.RoleDtoModels.RoleDto>) GetRoles(ResourceParameters resourceParameters);
         Task<RoleResponse> SaveAsync(Entities.Role role);
         Task<RoleResponse> UpdateAsync(Entities.Role role);
         Task<RoleResponse> DeleteAsync(Guid id);

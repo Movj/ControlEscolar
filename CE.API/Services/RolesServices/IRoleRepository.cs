@@ -12,7 +12,7 @@ namespace CE.API.Services.RolesServices
          * with the DbContext, check them in the implementation class.
          */
 
-        Task<IEnumerable<Entities.Role>> GetRolesAsync();
+        IQueryable<Entities.Role> GetRoles();
         Task<Entities.Role> GetRoleAsync(Guid id);
         Task AddRoleAsync(Entities.Role role);
         void UpdateRole(Entities.Role role);

@@ -40,7 +40,7 @@ namespace CE.API.Controllers
             var (paginationMetadata, pagedList) =
                 ((object, PagedList<ModelsDto.UsuarioDto>))_userService.GetUsersPagedList(resourceParameters);
 
-            if (paginationMetadata == null && pagedList == null)
+            if (paginationMetadata == null || pagedList == null)
             {
                 return BadRequest();
             }
