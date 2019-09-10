@@ -18,6 +18,8 @@ using CE.API.Extensions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Newtonsoft.Json.Serialization;
+using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.Mvc.Versioning;
 
 namespace CE.API
 {
@@ -83,7 +85,44 @@ namespace CE.API
                 return new UrlHelper(actionContext);
             });
 
-            
+            // Services for cache headers
+            services.AddHttpCacheHeaders((expirationOptions) => {
+                expirationOptions.MaxAge = 600;
+            }, (validationModelOptions) => {
+                validationModelOptions.MustRevalidate = true;
+            });
+
+            // Adding store caching services
+            services.AddResponseCaching();
+
+            // Adding limit services
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>((options) => {
+                options.GeneralRules =
+                new List<RateLimitRule>() {
+                    // Accept only 10 request in 5 minutes
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Limit = 1000,
+                        Period = "5m"
+                    },
+                    // and, two request every 10 seconds
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Limit = 200,
+                        Period = "10s"
+                    }
+                };
+            });
+
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+
+            // Adding versioning support
+            services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("X-api-version"));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -99,6 +138,16 @@ namespace CE.API
             }
 
             app.UseHttpsRedirection();
+
+            // Use limit services before any middleware
+            app.UseIpRateLimiting();
+
+            // Adding response caching before cache middleware
+            app.UseResponseCaching();
+
+            // Adding cache middleware important add before UseMvc
+            app.UseHttpCacheHeaders();
+
             app.UseMvc();
         }
     }

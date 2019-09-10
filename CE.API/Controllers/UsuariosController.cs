@@ -11,7 +11,8 @@ using static CE.API.Models.PaginationLinkDto;
 
 namespace CE.API.Controllers
 {
-
+    [ApiVersion("1.0")]
+    [Produces("application/json")]
     [Route("api/usuarios")]
     [ApiController]
     public class UsuariosController : ControllerBase
