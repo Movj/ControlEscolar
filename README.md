@@ -5,8 +5,13 @@ Este proyecto tiene por objetivo la construcción de un servicio web tipo <stron
 
 Además, se utilizó las librería <strong>LINQ</strong> para el uso de Queryies y la librería <strong>AutoMapper</strong> para realizar mapeos de objeto a objeto, esto con el fin de poder trabajar con distintos enfoques como <strong>Objetos de Transferencia de Datos</strong> / <strong>Data Transfer Objects</strong> (DTOs) o el patrón de diseño MVVM. Para la conexión de la web API con la base de datos (desarrollada para <strong>SQL Server</strong>) se utilizó <strong>Entity Framework Core</strong>, utilizando el enfoque <strong>"Base de datos primero"</strong>, por lo que se aplicó ingeniería inversa para abstraer el modelo de la base de datos.
 
+Ademas, la aplicación tiene soporte para <strong>versionado de API</strong>, mediante la librería de Microsoft: Versioning. También se utiliza la librería Marvin.Cache.Headers para trabajar con el <strong>control de la caché</strong>, <strong>ETags</strong> y administración de <strong>concurrencia</strong> y tiempo de vida de la caché. Esta librería también se apoya de la librería AspNetCoreRateLimit, la cual ayuda a administrar el <strong>límite de peticiones</strong> al servidor.
+
+
 <h2>About this project</h2>
 
 The porpuse of this project is to build a <strong>RESTful API</strong>, using <strong>ASP.NET Core version 2.1</strong>. This web application is based on the <strong>MVC architecture</strong>, for the API endpints, supporting and implementing <strong>async calls</strong>. Also, it's been designed and implemented <strong>services</strong> using <strong>Dependency Injection</strong>, and based on the design patterns: <strong>Unit of Work</strong> and <strong>Repository pattern</strong>.
 
 This project uses, for the database connection and comunication, the libraries of <strong>Entity Framework</strong> Core using <strong>Database first approach</strong>, on a <strong>SQL Server</strong> database. It's been applied reverse engineer to abstract the database structure (through <strong>Entity Framework Scaffolding</strong>). In addition, this API works with <strong>LINQ</strong> library for querying and <strong>Automapper</strong> for object to object mapping, in order to use <strong>Data Transfer Objects</strong> (DTOs) or MVVM pattern.
+
+Also, this project supports <strong>API verioning</strong>, through the Microsoft Library: Versioning. Other libraries used are Marvin.Cache.Headers library, which provides <strong>cache-control</strong>, <strong>ETags</strong>, expiration and <strong>concurrency management</strong>, and AspNetCoreRateLimit library for <strong>rate limit of requests</strong> to the server.
